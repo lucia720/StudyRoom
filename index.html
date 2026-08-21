@@ -1,0 +1,2030 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>学习打卡 · 小树成长</title>
+<style>
+/* ========== 基础重置 & 变量 ========== */
+:root {
+  --primary: #EC6EA0;
+  --primary-light: #F8A5C2;
+  --primary-dark: #C94F85;
+  --primary-bg: #FCE4EC;
+  --accent: #F06292;
+  --accent-light: #F8BBD0;
+  --danger: #EF5350;
+  --soil: #D8A0B4;
+  --soil-dark: #B07A90;
+  --sky: #F8BBD0;
+  --sky-light: #FCE4EC;
+  --sun: #FFD8E4;
+  --text: #8E2D5C;
+  --text-2: #B0618C;
+  --text-3: #C9A0B5;
+  --bg: #FFF0F5;
+  --card: #FFFFFF;
+  --border: #FCE4EC;
+  --shadow: 0 2px 8px rgba(236,110,160,0.10);
+  --shadow-lg: 0 6px 20px rgba(236,110,160,0.18);
+  --radius: 16px;
+  --radius-sm: 10px;
+  --radius-xs: 6px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html { font-size: 16px; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  background: linear-gradient(160deg, #F8C8DC, #FFF0F5);
+  min-height: 100vh;
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+input, button { font-family: inherit; outline: none; border: none; }
+button { cursor: pointer; }
+::-webkit-scrollbar { width: 0; height: 0; }
+
+/* ========== App 容器 ========== */
+#app {
+  max-width: 430px;
+  margin: 0 auto;
+  background: var(--bg);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  box-shadow: 0 0 40px rgba(0,0,0,0.06);
+  overflow: hidden;
+}
+
+/* ========== 顶部栏 ========== */
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 20px 8px;
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: #fff;
+  flex-shrink: 0;
+  z-index: 10;
+}
+.header-left { display: flex; align-items: center; gap: 8px; }
+.app-logo { font-size: 22px; }
+.app-name { font-size: 18px; font-weight: 700; letter-spacing: 1px; }
+.header-right { display: flex; align-items: center; gap: 10px; }
+.date-text { font-size: 12px; opacity: 0.85; }
+.streak-badge {
+  display: flex; align-items: center; gap: 4px;
+  background: rgba(255,255,255,0.2);
+  padding: 4px 12px; border-radius: 20px;
+  font-size: 13px; font-weight: 600;
+}
+.streak-badge .flame { font-size: 14px; }
+
+/* ========== 树展示区 ========== */
+.tree-hero {
+  position: relative;
+  background: linear-gradient(180deg, #FFE3F0 0%, #FFF0F6 50%, #FFF7FB 100%);
+  padding-bottom: 0;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.tree-svg-wrap {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  position: relative;
+  padding: 8px 0 0;
+}
+.tree-svg-wrap img {
+  width: 100%;
+  max-width: 280px;
+  display: block;
+  object-fit: contain;
+  transition: transform 0.4s cubic-bezier(0.4,0,0.2,1), opacity 0.3s;
+  animation: treeFadeIn 0.5s ease-out;
+}
+@keyframes treeFadeIn {
+  from { opacity: 0; transform: scale(0.92); }
+  to { opacity: 1; transform: scale(1); }
+}
+.tree-hero::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 8px;
+  background: linear-gradient(180deg, transparent, rgba(0,0,0,0.04));
+}
+
+/* 浮动积分提示 */
+.float-points {
+  position: absolute;
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--accent);
+  text-shadow: 0 2px 8px rgba(240,98,146,0.4);
+  pointer-events: none;
+  animation: floatUp 1.2s ease-out forwards;
+  z-index: 5;
+}
+@keyframes floatUp {
+  0% { transform: translateY(0) scale(0.5); opacity: 0; }
+  20% { transform: translateY(-10px) scale(1.2); opacity: 1; }
+  100% { transform: translateY(-80px) scale(1); opacity: 0; }
+}
+
+/* ========== 阶段信息 & 进度条 ========== */
+.stage-info {
+  padding: 8px 20px 14px;
+  background: linear-gradient(180deg, #FFF7FB, var(--bg));
+}
+.stage-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.stage-emoji { font-size: 20px; }
+.stage-name {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text);
+}
+.stage-level {
+  font-size: 12px;
+  color: var(--text-3);
+  margin-left: auto;
+}
+.progress-track {
+  height: 10px;
+  background: #F3D9E4;
+  border-radius: 6px;
+  overflow: hidden;
+  position: relative;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary-light), var(--primary));
+  border-radius: 6px;
+  transition: width 0.6s cubic-bezier(0.4,0,0.2,1);
+  position: relative;
+  overflow: hidden;
+}
+.progress-fill::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 100%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  animation: shimmer 2s infinite;
+}
+@keyframes shimmer { 100% { left: 100%; } }
+.progress-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--text-3);
+}
+.progress-current { font-weight: 600; color: var(--text-2); }
+.progress-next { color: var(--text-3); }
+
+/* ========== 统计卡片 ========== */
+.stats-cards {
+  display: flex;
+  gap: 8px;
+  padding: 12px 16px 6px;
+  flex-shrink: 0;
+}
+.stat-card {
+  flex: 1;
+  background: var(--card);
+  border-radius: var(--radius-sm);
+  padding: 10px 8px;
+  text-align: center;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  position: relative;
+  overflow: hidden;
+}
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+}
+.stat-card.growth::before { background: var(--primary); }
+.stat-card.available::before { background: var(--accent); }
+.stat-card.total::before { background: #B48AE8; }
+.stat-icon { font-size: 16px; }
+.stat-value {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1.2;
+}
+.stat-card.growth .stat-value { color: var(--primary-dark); }
+.stat-card.available .stat-value { color: var(--accent); }
+.stat-card.total .stat-value { color: #8E5FC0; }
+.stat-label { font-size: 10px; color: var(--text-3); }
+
+/* ========== 成长之路 ========== */
+.stage-roadmap {
+  padding: 4px 16px 8px;
+  flex-shrink: 0;
+}
+.roadmap-track {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 6px 2px;
+  scroll-behavior: smooth;
+}
+.roadmap-stage {
+  min-width: 58px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 4px;
+  border-radius: var(--radius-xs);
+  background: #F5F5F5;
+  transition: all 0.3s;
+  flex-shrink: 0;
+}
+.roadmap-stage.completed {
+  background: var(--primary-bg);
+  opacity: 0.6;
+}
+.roadmap-stage.current {
+  background: linear-gradient(135deg, #FCE4EC, #F8BBD0);
+  box-shadow: 0 2px 8px rgba(240,98,146,0.4);
+  transform: scale(1.08);
+}
+.roadmap-stage.locked {
+  opacity: 0.4;
+}
+.rm-emoji { font-size: 18px; }
+.rm-name { font-size: 9px; color: var(--text-2); font-weight: 600; white-space: nowrap; }
+.rm-points { font-size: 8px; color: var(--text-3); }
+.roadmap-stage.current .rm-name { color: var(--text); }
+
+/* ========== Tab 导航 ========== */
+.tab-nav {
+  display: flex;
+  background: var(--card);
+  margin: 4px 12px 0;
+  border-radius: var(--radius-sm);
+  padding: 4px;
+  gap: 4px;
+  box-shadow: var(--shadow);
+  flex-shrink: 0;
+}
+.tab-btn {
+  flex: 1;
+  padding: 8px 4px;
+  background: transparent;
+  border-radius: var(--radius-xs);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-3);
+  transition: all 0.25s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  position: relative;
+}
+.tab-btn.active {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(236,110,160,0.35);
+}
+.tab-badge {
+  display: inline-flex;
+  min-width: 16px;
+  height: 16px;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  border-radius: 8px;
+  padding: 0 4px;
+}
+.tab-btn.active .tab-badge { background: rgba(255,255,255,0.3); }
+
+/* ========== Tab 面板 ========== */
+.tab-panel {
+  display: none;
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 16px 80px;
+  -webkit-overflow-scrolling: touch;
+}
+.tab-panel.active { display: block; }
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.panel-title { font-size: 15px; font-weight: 700; color: var(--text); }
+.add-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: #fff;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  box-shadow: 0 2px 6px rgba(236,110,160,0.35);
+  transition: transform 0.15s;
+}
+.add-btn:active { transform: scale(0.95); }
+.clear-btn {
+  background: #FFEBEE;
+  color: var(--danger);
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.reset-btn {
+  background: var(--primary-bg);
+  color: var(--primary-dark);
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.panel-actions { display: flex; gap: 8px; }
+
+/* ========== 任务列表 ========== */
+.task-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  background: var(--card);
+  border-radius: var(--radius-sm);
+  margin-bottom: 8px;
+  box-shadow: var(--shadow);
+  transition: all 0.25s;
+  animation: slideIn 0.3s ease-out;
+}
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.task-item.completed { opacity: 0.55; }
+.task-item.completed .task-name { text-decoration: line-through; }
+.task-check {
+  width: 24px; height: 24px;
+  border: 2px solid var(--primary-light);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.25s;
+  flex-shrink: 0;
+  position: relative;
+}
+.task-check.checked {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  border-color: var(--primary);
+}
+.task-check svg {
+  width: 14px; height: 14px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.task-check.checked svg { opacity: 1; }
+.task-cat-icon { font-size: 18px; flex-shrink: 0; }
+.task-info { flex: 1; min-width: 0; }
+.task-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.task-meta { font-size: 10px; color: var(--text-3); margin-top: 2px; }
+.task-points {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+.task-delete {
+  width: 26px; height: 26px;
+  background: var(--primary-bg);
+  color: var(--primary);
+  font-size: 13px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s;
+  opacity: 1;
+}
+.task-delete:hover { background: #FFEBEE; color: var(--danger); }
+
+/* ========== 愿望列表 ========== */
+.wish-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  background: var(--card);
+  border-radius: var(--radius-sm);
+  margin-bottom: 8px;
+  box-shadow: var(--shadow);
+  animation: slideIn 0.3s ease-out;
+}
+.wish-icon { font-size: 20px; flex-shrink: 0; }
+.wish-info { flex: 1; min-width: 0; }
+.wish-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+.wish-cost {
+  font-size: 11px;
+  color: var(--accent);
+  font-weight: 700;
+  margin-top: 2px;
+}
+.wish-redeem {
+  padding: 6px 14px;
+  background: linear-gradient(135deg, var(--primary-light), var(--primary));
+  color: #fff;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 600;
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(240,98,146,0.35);
+  transition: transform 0.15s;
+}
+.wish-redeem:active { transform: scale(0.95); }
+.wish-redeem.disabled {
+  background: #E0E0E0;
+  color: #BDBDBD;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+.wish-redeem.done {
+  background: var(--primary-bg);
+  color: var(--primary-dark);
+  box-shadow: none;
+}
+.wish-delete {
+  width: 24px; height: 24px;
+  background: transparent;
+  color: var(--text-3);
+  font-size: 14px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.wish-delete:hover { background: #FFEBEE; color: var(--danger); }
+
+.redeemed-section { margin-top: 16px; }
+.redeemed-section h3 {
+  font-size: 13px;
+  color: var(--text-3);
+  margin-bottom: 8px;
+  padding-left: 4px;
+}
+.redeemed-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: #FAFAFA;
+  border-radius: var(--radius-sm);
+  margin-bottom: 6px;
+  opacity: 0.7;
+}
+.redeemed-item .wish-name { text-decoration: line-through; }
+.redeemed-time { font-size: 10px; color: var(--text-3); }
+
+/* ========== 历史记录 ========== */
+.history-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 14px;
+  background: var(--card);
+  border-radius: var(--radius-sm);
+  margin-bottom: 6px;
+  box-shadow: var(--shadow);
+}
+.history-icon {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+.history-icon.task { background: var(--primary-bg); }
+.history-icon.wish { background: var(--accent-light); }
+.history-icon.add { background: #E3F2FD; }
+.history-icon.delete { background: #FFEBEE; }
+.history-info { flex: 1; }
+.history-desc { font-size: 13px; color: var(--text); }
+.history-time { font-size: 10px; color: var(--text-3); margin-top: 2px; }
+.history-points {
+  font-size: 13px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.history-points.plus { color: var(--primary); }
+.history-points.minus { color: var(--danger); }
+
+/* ========== 日历 ========== */
+.calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.cal-month-btn {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: var(--primary-bg);
+  color: var(--primary-dark);
+  font-size: 20px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  box-shadow: var(--shadow);
+}
+.cal-month-btn:active { transform: scale(0.9); }
+.calendar-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+}
+.calendar-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  margin-bottom: 6px;
+}
+.calendar-weekdays span {
+  text-align: center;
+  font-size: 11px;
+  color: var(--text-3);
+  padding: 4px 0;
+}
+.calendar-weekdays span:first-child,
+.calendar-weekdays span:last-child { color: var(--accent); }
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 5px;
+}
+.cal-cell {
+  min-height: 54px;
+  background: var(--card);
+  border-radius: var(--radius-xs);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+}
+.cal-cell:active { transform: scale(0.92); }
+.cal-empty { background: transparent; box-shadow: none; cursor: default; }
+.cal-day { font-size: 13px; font-weight: 700; color: var(--text); }
+.cal-pts { font-size: 9px; font-weight: 700; line-height: 1; }
+.cal-plus { color: var(--primary); }
+.cal-minus { color: var(--danger); }
+.cal-zero { color: var(--text-3); }
+.cal-today {
+  border: 2px solid var(--primary);
+  box-shadow: 0 0 0 2px var(--primary-bg), var(--shadow);
+}
+.cal-selected {
+  background: var(--primary-bg);
+  box-shadow: 0 0 0 2px var(--primary-light);
+}
+.calendar-detail { margin-top: 14px; }
+.cal-detail-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-2);
+  margin-bottom: 8px;
+  padding-left: 4px;
+}
+.cal-detail-total {
+  margin-top: 10px;
+  text-align: right;
+  font-size: 13px;
+  color: var(--text-2);
+  font-weight: 600;
+  padding-right: 4px;
+}
+.cal-detail-total b { font-size: 15px; }
+
+/* ========== 空状态 ========== */
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-3);
+}
+.empty-state .emoji { font-size: 40px; margin-bottom: 8px; }
+.empty-state .text { font-size: 13px; }
+
+/* ========== 底部信息 ========== */
+.bottom-info {
+  position: fixed;
+  bottom: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 430px;
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(8px);
+  padding: 8px 16px;
+  font-size: 10px;
+  color: var(--text-3);
+  text-align: center;
+  border-top: 1px solid var(--border);
+  z-index: 5;
+}
+
+/* ========== 模态框 ========== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(150,60,100,0.45);
+  z-index: 100;
+  display: none;
+  align-items: flex-end;
+  justify-content: center;
+  animation: fadeIn 0.2s;
+}
+.modal-overlay.show { display: flex; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.modal-content {
+  background: var(--card);
+  width: 100%;
+  max-width: 430px;
+  border-radius: 24px 24px 0 0;
+  padding: 24px 20px 32px;
+  animation: slideUp 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.modal-title {
+  font-size: 17px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  text-align: center;
+}
+.modal-input {
+  width: 100%;
+  padding: 12px 16px;
+  background: #F5F5F5;
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  color: var(--text);
+  margin-bottom: 16px;
+}
+.modal-input:focus { background: var(--primary-bg); }
+.input-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.input-row label { font-size: 14px; color: var(--text-2); flex-shrink: 0; }
+.number-input {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background: #F5F5F5;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+.num-btn {
+  width: 36px; height: 40px;
+  background: transparent;
+  font-size: 18px;
+  color: var(--primary);
+  font-weight: 700;
+}
+.num-btn:active { background: #E0E0E0; }
+.number-input input {
+  width: 60px;
+  text-align: center;
+  background: transparent;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  border: none;
+}
+.quick-points { display: flex; gap: 6px; flex: 1; }
+.quick-pt {
+  flex: 1;
+  padding: 6px 0;
+  background: #F5F5F5;
+  border-radius: var(--radius-xs);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-2);
+}
+.quick-pt.active {
+  background: var(--primary-bg);
+  color: var(--primary-dark);
+}
+
+/* 分类选择器 */
+.category-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+.cat-btn {
+  padding: 8px 14px;
+  background: #F5F5F5;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-3);
+  transition: all 0.2s;
+}
+.cat-btn.active {
+  background: var(--primary-bg);
+  color: var(--primary-dark);
+  box-shadow: 0 1px 4px rgba(236,110,160,0.25);
+}
+
+.modal-actions {
+  display: flex;
+  gap: 12px;
+}
+.btn-cancel, .btn-confirm {
+  flex: 1;
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  font-weight: 600;
+  transition: transform 0.15s;
+}
+.btn-cancel {
+  background: #F5F5F5;
+  color: var(--text-3);
+}
+.btn-confirm {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(236,110,160,0.35);
+}
+.btn-cancel:active, .btn-confirm:active { transform: scale(0.97); }
+
+/* ========== 庆祝弹窗 ========== */
+.celebration-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(150,60,100,0.5);
+  z-index: 200;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+.celebration-overlay.show { display: flex; animation: fadeIn 0.3s; }
+.celebration-box {
+  background: var(--card);
+  border-radius: 24px;
+  padding: 32px 28px;
+  text-align: center;
+  max-width: 320px;
+  width: 90%;
+  animation: popIn 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  position: relative;
+  overflow: hidden;
+}
+@keyframes popIn {
+  from { transform: scale(0.5); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+.celebration-box::before {
+  content: '';
+  position: absolute;
+  top: -50%; left: -50%;
+  width: 200%; height: 200%;
+  background: radial-gradient(circle, rgba(240,98,146,0.18), transparent 60%);
+  pointer-events: none;
+}
+.celebration-emoji {
+  font-size: 48px;
+  margin-bottom: 8px;
+  animation: bounce 0.6s ease-out;
+}
+@keyframes bounce {
+  0% { transform: scale(0); }
+  60% { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+.celebration-title {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+.celebration-msg {
+  font-size: 14px;
+  color: var(--text-2);
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+.celebration-btn {
+  padding: 10px 32px;
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: #fff;
+  border-radius: 20px;
+  font-size: 15px;
+  font-weight: 600;
+  box-shadow: 0 3px 10px rgba(236,110,160,0.45);
+}
+
+/* 撒花动画 */
+.confetti-piece {
+  position: fixed;
+  width: 8px; height: 8px;
+  top: -10px;
+  z-index: 201;
+  animation: confettiFall linear forwards;
+  pointer-events: none;
+}
+@keyframes confettiFall {
+  to { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
+
+/* ========== 确认弹窗 ========== */
+.confirm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(150,60,100,0.45);
+  z-index: 150;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+.confirm-overlay.show { display: flex; animation: fadeIn 0.2s; }
+.confirm-box {
+  background: var(--card);
+  border-radius: 20px;
+  padding: 24px;
+  max-width: 300px;
+  width: 85%;
+  text-align: center;
+  animation: popIn 0.3s;
+}
+.confirm-title { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+.confirm-msg { font-size: 13px; color: var(--text-2); margin-bottom: 20px; line-height: 1.5; }
+.confirm-actions { display: flex; gap: 10px; }
+.confirm-actions button {
+  flex: 1;
+  padding: 10px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 600;
+}
+.btn-no { background: #F5F5F5; color: var(--text-3); }
+.btn-yes { background: linear-gradient(135deg, var(--primary-light), var(--primary)); color: #fff; }
+
+/* ========== Toast ========== */
+.toast {
+  position: fixed;
+  top: 60px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-20px);
+  background: rgba(170,70,115,0.92);
+  color: #fff;
+  padding: 10px 24px;
+  border-radius: 20px;
+  font-size: 13px;
+  z-index: 300;
+  opacity: 0;
+  transition: all 0.3s;
+  pointer-events: none;
+  white-space: nowrap;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+<div id="app">
+  <!-- 顶部栏 -->
+  <header class="top-bar">
+    <div class="header-left">
+      <span class="app-logo">🌸</span>
+      <span class="app-name">学习打卡</span>
+    </div>
+    <div class="header-right">
+      <span class="date-text" id="dateText"></span>
+      <div class="streak-badge">
+        <span class="flame">🔥</span>
+        <span id="streakNum">0</span>
+        <span>天</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- 树展示区 -->
+  <section class="tree-hero">
+    <div class="tree-svg-wrap" id="treeSvgWrap"></div>
+    <div class="stage-info">
+      <div class="stage-badge">
+        <span class="stage-emoji" id="stageEmoji">🌰</span>
+        <span class="stage-name" id="stageName">种子</span>
+        <span class="stage-level" id="stageLevel">阶段 1/10</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progressFill" style="width:0%"></div>
+      </div>
+      <div class="progress-labels">
+        <span class="progress-current" id="progressCurrent">0 成长值</span>
+        <span class="progress-next" id="progressNext">下一阶段: 发芽 (50)</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 统计卡片 -->
+  <section class="stats-cards">
+    <div class="stat-card growth">
+      <span class="stat-icon">🌱</span>
+      <span class="stat-value" id="growthValue">0</span>
+      <span class="stat-label">成长积分</span>
+    </div>
+    <div class="stat-card available">
+      <span class="stat-icon">⭐</span>
+      <span class="stat-value" id="availableValue">0</span>
+      <span class="stat-label">可用积分</span>
+    </div>
+    <div class="stat-card total">
+      <span class="stat-icon">📈</span>
+      <span class="stat-value" id="totalValue">0</span>
+      <span class="stat-label">累计获得</span>
+    </div>
+  </section>
+
+  <!-- 成长之路 -->
+  <section class="stage-roadmap">
+    <div class="roadmap-track" id="roadmapTrack"></div>
+  </section>
+
+  <!-- Tab 导航 -->
+  <nav class="tab-nav">
+    <button class="tab-btn active" data-tab="tasks">
+      📋 今日任务
+      <span class="tab-badge" id="taskBadge">0</span>
+    </button>
+    <button class="tab-btn" data-tab="wishes">
+      🎁 积分兑换
+      <span class="tab-badge" id="wishBadge">0</span>
+    </button>
+    <button class="tab-btn" data-tab="history">
+      📖 成长历程
+    </button>
+    <button class="tab-btn" data-tab="calendar">
+      📅 日历
+    </button>
+  </nav>
+
+  <!-- 任务面板 -->
+  <section class="tab-panel active" id="tasksPanel">
+    <div class="panel-header">
+      <span class="panel-title">今日任务</span>
+      <button class="add-btn" id="openAddTask">＋ 添加任务</button>
+    </div>
+    <div id="taskList"></div>
+  </section>
+
+  <!-- 愿望面板 -->
+  <section class="tab-panel" id="wishesPanel">
+    <div class="panel-header">
+      <span class="panel-title">积分兑换</span>
+      <button class="add-btn" id="openAddWish">＋ 添加愿望</button>
+    </div>
+    <div id="wishList"></div>
+    <div class="redeemed-section" id="redeemedSection" style="display:none">
+      <h3>✅ 已兑换</h3>
+      <div id="redeemedList"></div>
+    </div>
+  </section>
+
+  <!-- 历史面板 -->
+  <section class="tab-panel" id="historyPanel">
+    <div class="panel-header">
+      <span class="panel-title">成长历程</span>
+      <div class="panel-actions">
+        <button class="clear-btn" id="clearHistory">清空记录</button>
+        <button class="reset-btn" id="resetAll">重置数据</button>
+      </div>
+    </div>
+    <div id="historyList"></div>
+  </section>
+
+  <!-- 日历面板 -->
+  <section class="tab-panel" id="calendarPanel">
+    <div class="calendar-header">
+      <button class="cal-month-btn" id="prevMonth">‹</button>
+      <span class="calendar-title" id="calendarTitle">2026年8月</span>
+      <button class="cal-month-btn" id="nextMonth">›</button>
+    </div>
+    <div class="calendar-weekdays">
+      <span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span>
+    </div>
+    <div class="calendar-grid" id="calendarGrid"></div>
+    <div class="calendar-detail" id="calendarDetail"></div>
+  </section>
+
+  <!-- 底部提示 -->
+  <div class="bottom-info">
+    完成任务获得积分促进小树成长 · 兑换愿望消耗积分不影响已积累的成长值
+  </div>
+</div>
+
+<!-- 添加任务模态框 -->
+<div class="modal-overlay" id="addTaskModal">
+  <div class="modal-content">
+    <div class="modal-title">添加任务</div>
+    <input type="text" class="modal-input" id="taskNameInput" placeholder="输入任务名称（如：背20个单词）" maxlength="20">
+    <div class="input-row">
+      <label>积分</label>
+      <div class="number-input">
+        <button class="num-btn" id="taskPtDec">−</button>
+        <input type="number" id="taskPtInput" value="10" min="1" max="100">
+        <button class="num-btn" id="taskPtInc">＋</button>
+      </div>
+      <div class="quick-points">
+        <button class="quick-pt" data-pt="5">5</button>
+        <button class="quick-pt active" data-pt="10">10</button>
+        <button class="quick-pt" data-pt="15">15</button>
+        <button class="quick-pt" data-pt="20">20</button>
+      </div>
+    </div>
+    <div class="category-picker" id="catPicker"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" id="cancelTask">取消</button>
+      <button class="btn-confirm" id="confirmTask">确认添加</button>
+    </div>
+  </div>
+</div>
+
+<!-- 添加愿望模态框 -->
+<div class="modal-overlay" id="addWishModal">
+  <div class="modal-content">
+    <div class="modal-title">添加愿望</div>
+    <input type="text" class="modal-input" id="wishNameInput" placeholder="输入愿望名称（如：看一集剧）" maxlength="20">
+    <div class="input-row">
+      <label>消耗</label>
+      <div class="number-input">
+        <button class="num-btn" id="wishCostDec">−</button>
+        <input type="number" id="wishCostInput" value="30" min="1" max="9999">
+        <button class="num-btn" id="wishCostInc">＋</button>
+      </div>
+      <div class="quick-points">
+        <button class="quick-pt" data-cost="20">20</button>
+        <button class="quick-pt active" data-cost="30">30</button>
+        <button class="quick-pt" data-cost="50">50</button>
+        <button class="quick-pt" data-cost="100">100</button>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" id="cancelWish">取消</button>
+      <button class="btn-confirm" id="confirmWish">确认添加</button>
+    </div>
+  </div>
+</div>
+
+<!-- 庆祝弹窗 -->
+<div class="celebration-overlay" id="celebration">
+  <div class="celebration-box">
+    <div class="celebration-emoji" id="celeEmoji">🎉</div>
+    <div class="celebration-title" id="celeTitle">恭喜升级！</div>
+    <div class="celebration-msg" id="celeMsg">你的小树苗成长了！</div>
+    <button class="celebration-btn" id="celeBtn">继续加油</button>
+  </div>
+</div>
+
+<!-- 确认弹窗 -->
+<div class="confirm-overlay" id="confirmDialog">
+  <div class="confirm-box">
+    <div class="confirm-title" id="confirmTitle">确认兑换</div>
+    <div class="confirm-msg" id="confirmMsg"></div>
+    <div class="confirm-actions">
+      <button class="btn-no" id="confirmNo">取消</button>
+      <button class="btn-yes" id="confirmYes">确认</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+(function() {
+  'use strict';
+
+  // ========== 常量 ==========
+  var STAGES = [
+    { name: '种子',     emoji: '🌰', threshold: 0,    nextDelta: 50  },
+    { name: '发芽',     emoji: '🌱', threshold: 50,   nextDelta: 70  },
+    { name: '幼芽',     emoji: '🌿', threshold: 120,  nextDelta: 100 },
+    { name: '小树苗',   emoji: '🌸', threshold: 220,  nextDelta: 130 },
+    { name: '嫩树',     emoji: '🌸', threshold: 350,  nextDelta: 160 },
+    { name: '成长树',   emoji: '🌸', threshold: 510,  nextDelta: 190 },
+    { name: '壮年树',   emoji: '🌸', threshold: 700,  nextDelta: 220 },
+    { name: '茂盛树',   emoji: '🌸', threshold: 920,  nextDelta: 250 },
+    { name: '开花树',   emoji: '🌸', threshold: 1170, nextDelta: 280 },
+    { name: '参天大树', emoji: '🌸', threshold: 1450, nextDelta: Infinity }
+  ];
+
+  var CATEGORIES = [
+    { id: 'study',    name: '学习', emoji: '📖', color: '#EC6EA0' },
+    { id: 'reading',  name: '阅读', emoji: '📚', color: '#CE93D8' },
+    { id: 'writing',  name: '写作', emoji: '✍️', color: '#F8A5C2' },
+    { id: 'exercise', name: '运动', emoji: '🏃', color: '#F48FB1' },
+    { id: 'skill',    name: '技能', emoji: '🎯', color: '#FFB74D' },
+    { id: 'other',    name: '其他', emoji: '💡', color: '#C9A0B5' }
+  ];
+
+  // 樱花成长图片资源（1~10 按成长顺序）
+  var TREE_IMAGES = [
+    'images/1.png',  // 种子
+    'images/2.jpg',  // 发芽
+    'images/3.png',  // 幼芽
+    'images/4.png',  // 小树苗
+    'images/5.png',  // 嫩树
+    'images/6.png',  // 成长树
+    'images/7.jpg',  // 壮年树
+    'images/8.jpg',  // 茂盛树
+    'images/9.jpg',  // 开花树
+    'images/10.jpg'  // 参天大树
+  ];
+
+  // ========== 状态 ==========
+  var STORAGE_KEY = 'studyTreeApp_v1';
+  var state = null;
+  var selectedCategory = 'study';
+  var confirmCallback = null;
+  var calYear = new Date().getFullYear();
+  var calMonth = new Date().getMonth();
+
+  function defaultState() {
+    return {
+      tasks: [
+        { id: gid(), name: '背诵20个单词', points: 10, category: 'study', completed: false },
+        { id: gid(), name: '阅读30分钟',   points: 8,  category: 'reading', completed: false },
+        { id: gid(), name: '完成2道练习题', points: 12, category: 'study', completed: false },
+        { id: gid(), name: '运动15分钟',    points: 5,  category: 'exercise', completed: false }
+      ],
+      wishes: [
+        { id: gid(), name: '看1集喜欢的剧',  cost: 30, redeemed: false, redeemedAt: null },
+        { id: gid(), name: '享受一杯奶茶',   cost: 20, redeemed: false, redeemedAt: null },
+        { id: gid(), name: '周末睡到自然醒', cost: 50, redeemed: false, redeemedAt: null },
+        { id: gid(), name: '买一本新书',     cost: 80, redeemed: false, redeemedAt: null }
+      ],
+      totalEarned: 0,
+      totalRedeemed: 0,
+      history: [],
+      streak: 0,
+      lastActiveDate: null
+    };
+  }
+
+  // ========== 工具函数 ==========
+  function gid() { return Date.now().toString(36) + Math.random().toString(36).substr(2,5); }
+
+  function getTodayStr() {
+    var d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  }
+
+  function getYesterdayStr() {
+    var d = new Date(); d.setDate(d.getDate()-1);
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  }
+
+  function formatTime(ts) {
+    var d = new Date(ts);
+    return String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+  }
+
+  function formatDateCN() {
+    var d = new Date();
+    var months = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+    var days = ['日','一','二','三','四','五','六'];
+    return months[d.getMonth()] + d.getDate() + '日 周' + days[d.getDay()];
+  }
+
+  function getGrowthPoints() { return state.totalEarned - state.totalRedeemed; }
+  function getAvailablePoints() { return state.totalEarned - state.totalRedeemed; }
+
+  function getStageIndex() {
+    var gp = getGrowthPoints();
+    for (var i = STAGES.length - 1; i >= 0; i--) {
+      if (gp >= STAGES[i].threshold) return i;
+    }
+    return 0;
+  }
+
+  function getStageProgress() {
+    var gp = getGrowthPoints();
+    var idx = getStageIndex();
+    var stage = STAGES[idx];
+    if (idx >= STAGES.length - 1) return { progress: 1, current: gp, needed: 0, isMax: true };
+    var base = stage.threshold;
+    var next = STAGES[idx + 1].threshold;
+    var range = next - base;
+    var progress = (gp - base) / range;
+    return { progress: Math.min(progress, 1), current: gp, needed: next, isMax: false };
+  }
+
+  function saveState() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
+  }
+
+  function loadState() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        state = JSON.parse(raw);
+        // 兼容性检查
+        if (!state.tasks) state.tasks = [];
+        if (!state.wishes) state.wishes = [];
+        if (!state.history) state.history = [];
+        if (state.totalEarned == null) state.totalEarned = 0;
+        if (state.totalRedeemed == null) state.totalRedeemed = 0;
+        if (state.streak == null) state.streak = 0;
+        if (state.lastActiveDate == null) state.lastActiveDate = null;
+      } else {
+        state = defaultState();
+        saveState();
+      }
+    } catch(e) {
+      state = defaultState();
+    }
+    checkStreak();
+  }
+
+  function checkStreak() {
+    var today = getTodayStr();
+    var yesterday = getYesterdayStr();
+    if (state.lastActiveDate === today) {
+      // 今天已完成过任务，不重置
+    } else if (state.lastActiveDate === yesterday) {
+      // 昨天有完成，streak保持
+    } else {
+      // 断了
+      state.streak = 0;
+    }
+    saveState();
+  }
+
+  // ========== 历史 ==========
+  function addHistory(type, desc, points) {
+    state.history.unshift({
+      id: gid(),
+      ts: Date.now(),
+      type: type,
+      desc: desc,
+      points: points
+    });
+    if (state.history.length > 200) state.history = state.history.slice(0, 200);
+  }
+
+  // ========== 树图片生成 ==========
+  function getTreeImage(stageIdx, progress) {
+    var src = TREE_IMAGES[stageIdx] || TREE_IMAGES[0];
+    // 根据阶段内进度做轻微缩放，营造持续成长感
+    var scale = 0.88 + progress * 0.12;
+    return '<img src="' + src + '" alt="' + STAGES[stageIdx].name + '" ' +
+           'style="transform:scale(' + scale.toFixed(3) + ')" draggable="false">';
+  }
+
+  // ========== 渲染 ==========
+  function renderAll() {
+    renderTree();
+    renderStats();
+    renderRoadmap();
+    renderTasks();
+    renderWishes();
+    renderHistory();
+    renderCalendar();
+    renderHeader();
+  }
+
+  function renderHeader() {
+    document.getElementById('dateText').textContent = formatDateCN();
+    document.getElementById('streakNum').textContent = state.streak;
+  }
+
+  function renderTree() {
+    var idx = getStageIndex();
+    var sp = getStageProgress();
+    var img = getTreeImage(idx, sp.progress);
+    document.getElementById('treeSvgWrap').innerHTML = img;
+
+    var stage = STAGES[idx];
+    document.getElementById('stageEmoji').textContent = stage.emoji;
+    document.getElementById('stageName').textContent = stage.name;
+    document.getElementById('stageLevel').textContent = '阶段 ' + (idx+1) + '/10';
+    document.getElementById('progressFill').style.width = (sp.progress * 100) + '%';
+    document.getElementById('progressCurrent').textContent = sp.current + ' 成长值';
+
+    if (sp.isMax) {
+      document.getElementById('progressNext').textContent = '🎉 已达最高阶段';
+    } else {
+      document.getElementById('progressNext').textContent = '下一阶段: ' + STAGES[idx+1].name + ' (' + sp.needed + ')';
+    }
+  }
+
+  function renderStats() {
+    document.getElementById('growthValue').textContent = getGrowthPoints();
+    document.getElementById('availableValue').textContent = getAvailablePoints();
+    document.getElementById('totalValue').textContent = state.totalEarned;
+  }
+
+  function renderRoadmap() {
+    var idx = getStageIndex();
+    var html = '';
+    for (var i = 0; i < STAGES.length; i++) {
+      var st = STAGES[i];
+      var cls = '';
+      if (i < idx) cls = 'completed';
+      else if (i === idx) cls = 'current';
+      else cls = 'locked';
+      var emoji = i <= idx ? st.emoji : '🔒';
+      html += '<div class="roadmap-stage ' + cls + '">';
+      html += '<span class="rm-emoji">' + emoji + '</span>';
+      html += '<span class="rm-name">' + st.name + '</span>';
+      html += '<span class="rm-points">' + st.threshold + '</span>';
+      html += '</div>';
+    }
+    document.getElementById('roadmapTrack').innerHTML = html;
+    // 滚动到当前阶段
+    var track = document.getElementById('roadmapTrack');
+    var current = track.children[idx];
+    if (current) {
+      track.scrollLeft = current.offsetLeft - track.offsetWidth/2 + current.offsetWidth/2;
+    }
+  }
+
+  function renderTasks() {
+    var list = document.getElementById('taskList');
+    var pending = state.tasks.filter(function(t){ return !t.completed; });
+    var done = state.tasks.filter(function(t){ return t.completed; });
+
+    document.getElementById('taskBadge').textContent = pending.length;
+
+    if (state.tasks.length === 0) {
+      list.innerHTML = '<div class="empty-state"><div class="emoji">📝</div><div class="text">还没有任务，点击右上角添加吧</div></div>';
+      return;
+    }
+
+    var html = '';
+    // 未完成在前
+    for (var i = 0; i < pending.length; i++) html += taskItemHTML(pending[i]);
+    for (var j = 0; j < done.length; j++) html += taskItemHTML(done[j]);
+
+    list.innerHTML = html;
+
+    // 绑定事件
+    var items = list.querySelectorAll('.task-item');
+    for (var k = 0; k < items.length; k++) {
+      (function(item) {
+        var id = item.dataset.id;
+        item.querySelector('.task-check').addEventListener('click', function() { toggleTask(id, item); });
+        item.querySelector('.task-delete').addEventListener('click', function(e) {
+          e.stopPropagation();
+          deleteTask(id);
+        });
+      })(items[k]);
+    }
+  }
+
+  function taskItemHTML(t) {
+    var cat = CATEGORIES.find(function(c){ return c.id === t.category; }) || CATEGORIES[5];
+    return '<div class="task-item' + (t.completed ? ' completed' : '') + '" data-id="' + t.id + '">' +
+      '<div class="task-check' + (t.completed ? ' checked' : '') + '">' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' +
+      '</div>' +
+      '<span class="task-cat-icon">' + cat.emoji + '</span>' +
+      '<div class="task-info">' +
+        '<div class="task-name">' + esc(t.name) + '</div>' +
+        '<div class="task-meta">' + cat.name + '</div>' +
+      '</div>' +
+      '<span class="task-points">+' + t.points + '</span>' +
+      (t.completed ? '' : '<button class="task-delete">✕</button>') +
+    '</div>';
+  }
+
+  function renderWishes() {
+    var list = document.getElementById('wishList');
+    var avail = state.wishes.filter(function(w){ return !w.redeemed; });
+    var redeemed = state.wishes.filter(function(w){ return w.redeemed; });
+
+    document.getElementById('wishBadge').textContent = avail.length;
+
+    if (state.wishes.length === 0) {
+      list.innerHTML = '<div class="empty-state"><div class="emoji">🎁</div><div class="text">还没有愿望，添加一个吧</div></div>';
+    } else {
+      var html = '';
+      for (var i = 0; i < avail.length; i++) html += wishItemHTML(avail[i]);
+      list.innerHTML = html;
+
+      var items = list.querySelectorAll('.wish-item');
+      for (var k = 0; k < items.length; k++) {
+        (function(item) {
+          var id = item.dataset.id;
+          var btn = item.querySelector('.wish-redeem');
+          if (btn && !btn.classList.contains('disabled')) {
+            btn.addEventListener('click', function() { tryRedeem(id); });
+          }
+          var del = item.querySelector('.wish-delete');
+          if (del) del.addEventListener('click', function() { deleteWish(id); });
+        })(items[k]);
+      }
+    }
+
+    // 已兑换
+    var rs = document.getElementById('redeemedSection');
+    var rl = document.getElementById('redeemedList');
+    if (redeemed.length > 0) {
+      rs.style.display = 'block';
+      var rh = '';
+      for (var j = 0; j < redeemed.length; j++) {
+        var w = redeemed[j];
+        rh += '<div class="redeemed-item">' +
+          '<span class="wish-icon">✅</span>' +
+          '<div class="wish-info">' +
+            '<div class="wish-name">' + esc(w.name) + '</div>' +
+            '<div class="redeemed-time">' + (w.redeemedAt ? new Date(w.redeemedAt).toLocaleString('zh-CN', {month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '') + '</div>' +
+          '</div>' +
+          '<span class="wish-cost">−' + w.cost + '</span>' +
+        '</div>';
+      }
+      rl.innerHTML = rh;
+    } else {
+      rs.style.display = 'none';
+    }
+  }
+
+  function wishItemHTML(w) {
+    var can = getAvailablePoints() >= w.cost;
+    return '<div class="wish-item" data-id="' + w.id + '">' +
+      '<span class="wish-icon">🎁</span>' +
+      '<div class="wish-info">' +
+        '<div class="wish-name">' + esc(w.name) + '</div>' +
+        '<div class="wish-cost">消耗 ' + w.cost + ' 积分</div>' +
+      '</div>' +
+      '<button class="wish-redeem' + (can ? '' : ' disabled') + '">' + (can ? '兑换' : '不足') + '</button>' +
+      '<button class="wish-delete">✕</button>' +
+    '</div>';
+  }
+
+  function renderHistory() {
+    var list = document.getElementById('historyList');
+    if (state.history.length === 0) {
+      list.innerHTML = '<div class="empty-state"><div class="emoji">📖</div><div class="text">还没有成长记录</div></div>';
+      return;
+    }
+    var html = '';
+    for (var i = 0; i < state.history.length; i++) {
+      var h = state.history[i];
+      var iconCls = 'task', iconStr = '✓';
+      if (h.type === 'wish') { iconCls = 'wish'; iconStr = '🎁'; }
+      else if (h.type === 'add_task') { iconCls = 'add'; iconStr = '＋'; }
+      else if (h.type === 'add_wish') { iconCls = 'add'; iconStr = '＋'; }
+      else if (h.type === 'delete') { iconCls = 'delete'; iconStr = '✕'; }
+      else if (h.type === 'uncomplete') { iconCls = 'delete'; iconStr = '↩'; }
+
+      var ptCls = h.points > 0 ? 'plus' : 'minus';
+      var ptStr = h.points > 0 ? ('+' + h.points) : ('' + h.points);
+      if (h.points === 0) { ptCls = ''; ptStr = ''; }
+
+      html += '<div class="history-item">' +
+        '<div class="history-icon ' + iconCls + '">' + iconStr + '</div>' +
+        '<div class="history-info">' +
+          '<div class="history-desc">' + esc(h.desc) + '</div>' +
+          '<div class="history-time">' + formatTime(h.ts) + '</div>' +
+        '</div>' +
+        (ptStr ? '<span class="history-points ' + ptCls + '">' + ptStr + '</span>' : '') +
+      '</div>';
+    }
+    list.innerHTML = html;
+  }
+
+  // ========== 日历 ==========
+  function dateKeyOf(ts) {
+    var d = new Date(ts);
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  }
+
+  // 按日期聚合每日净积分（来自成长记录）
+  function getDailyPointsMap() {
+    var map = {};
+    state.history.forEach(function(h) {
+      if (!h.ts) return;
+      var key = dateKeyOf(h.ts);
+      map[key] = (map[key] || 0) + (h.points || 0);
+    });
+    return map;
+  }
+
+  function renderCalendar() {
+    var title = document.getElementById('calendarTitle');
+    title.textContent = calYear + '年' + (calMonth + 1) + '月';
+
+    var dailyMap = getDailyPointsMap();
+    var grid = document.getElementById('calendarGrid');
+    var todayKey = getTodayStr();
+
+    var firstDow = new Date(calYear, calMonth, 1).getDay(); // 0=周日
+    var offset = (firstDow + 6) % 7; // 周一为一周开始
+    var daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+
+    var html = '';
+    for (var i = 0; i < offset; i++) html += '<div class="cal-cell cal-empty"></div>';
+
+    for (var d = 1; d <= daysInMonth; d++) {
+      var key = calYear + '-' + String(calMonth + 1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+      var pts = dailyMap[key] || 0;
+      var cls = 'cal-cell';
+      if (key === todayKey) cls += ' cal-today';
+      var ptHtml = '';
+      if (pts > 0) ptHtml = '<span class="cal-pts cal-plus">+' + pts + '</span>';
+      else if (pts < 0) ptHtml = '<span class="cal-pts cal-minus">' + pts + '</span>';
+      else if (dailyMap[key] !== undefined) ptHtml = '<span class="cal-pts cal-zero">0</span>';
+
+      html += '<div class="' + cls + '" data-key="' + key + '">' +
+        '<span class="cal-day">' + d + '</span>' + ptHtml +
+      '</div>';
+    }
+    grid.innerHTML = html;
+
+    var cells = grid.querySelectorAll('.cal-cell[data-key]');
+    for (var k = 0; k < cells.length; k++) {
+      cells[k].addEventListener('click', function() {
+        var prev = grid.querySelector('.cal-selected');
+        if (prev) prev.classList.remove('cal-selected');
+        this.classList.add('cal-selected');
+        showDailyDetail(this.dataset.key);
+      });
+    }
+  }
+
+  function showDailyDetail(key) {
+    var detail = document.getElementById('calendarDetail');
+    var records = state.history.filter(function(h) {
+      return h.ts && dateKeyOf(h.ts) === key;
+    });
+
+    var title = key;
+    if (key === getTodayStr()) title += '（今天）';
+
+    if (records.length === 0) {
+      detail.innerHTML = '<div class="cal-detail-title">' + title + ' · 积分明细</div>' +
+        '<div class="empty-state" style="padding:18px"><div class="emoji">📭</div><div class="text">这一天还没有积分记录</div></div>';
+      return;
+    }
+
+    var total = 0;
+    var html = '<div class="cal-detail-title">' + title + ' · 积分明细</div>';
+    for (var i = 0; i < records.length; i++) {
+      var h = records[i];
+      total += (h.points || 0);
+      var icon = '✓', iconCls = 'task';
+      if (h.type === 'wish') { icon = '🎁'; iconCls = 'wish'; }
+      else if (h.type === 'add_task' || h.type === 'add_wish') { icon = '＋'; iconCls = 'add'; }
+      else if (h.type === 'delete') { icon = '✕'; iconCls = 'delete'; }
+      else if (h.type === 'uncomplete') { icon = '↩'; iconCls = 'delete'; }
+      var ptCls = h.points > 0 ? 'plus' : (h.points < 0 ? 'minus' : '');
+      var ptStr = h.points > 0 ? ('+' + h.points) : (h.points < 0 ? ('' + h.points) : '');
+      html += '<div class="history-item">' +
+        '<div class="history-icon ' + iconCls + '">' + icon + '</div>' +
+        '<div class="history-info">' +
+          '<div class="history-desc">' + esc(h.desc) + '</div>' +
+          '<div class="history-time">' + formatTime(h.ts) + '</div>' +
+        '</div>' +
+        (ptStr ? '<span class="history-points ' + ptCls + '">' + ptStr + '</span>' : '') +
+      '</div>';
+    }
+    var totalCls = total > 0 ? 'cal-plus' : (total < 0 ? 'cal-minus' : 'cal-zero');
+    html += '<div class="cal-detail-total">当日合计: <b class="' + totalCls + '">' + (total > 0 ? '+' : '') + total + '</b></div>';
+    detail.innerHTML = html;
+  }
+
+  function setupCalendar() {
+    document.getElementById('prevMonth').addEventListener('click', function() {
+      calMonth--;
+      if (calMonth < 0) { calMonth = 11; calYear--; }
+      renderCalendar();
+    });
+    document.getElementById('nextMonth').addEventListener('click', function() {
+      calMonth++;
+      if (calMonth > 11) { calMonth = 0; calYear++; }
+      renderCalendar();
+    });
+  }
+
+  // ========== 动作 ==========
+  function toggleTask(id, itemEl) {
+    var task = state.tasks.find(function(t){ return t.id === id; });
+    if (!task) return;
+
+    var wasCompleted = task.completed;
+    task.completed = !task.completed;
+
+    if (task.completed) {
+      state.totalEarned += task.points;
+      addHistory('task', '完成「' + task.name + '」', task.points);
+      // 浮动积分
+      if (itemEl) showFloatPoints(itemEl, '+' + task.points);
+      // streak
+      var today = getTodayStr();
+      if (state.lastActiveDate !== today) {
+        var yesterday = getYesterdayStr();
+        if (state.lastActiveDate === yesterday) {
+          state.streak += 1;
+        } else {
+          state.streak = 1;
+        }
+        state.lastActiveDate = today;
+      }
+    } else {
+      state.totalEarned -= task.points;
+      if (state.totalEarned < 0) state.totalEarned = 0;
+      addHistory('uncomplete', '取消完成「' + task.name + '」', -task.points);
+    }
+
+    var prevStage = getStageIndex();
+    saveState();
+    var newStage = getStageIndex();
+
+    renderAll();
+
+    if (!wasCompleted && newStage > prevStage) {
+      celebrate(newStage);
+    }
+  }
+
+  function deleteTask(id) {
+    var task = state.tasks.find(function(t){ return t.id === id; });
+    if (!task) return;
+    if (task.completed) {
+      showToast('已完成任务不可删除');
+      return;
+    }
+    state.tasks = state.tasks.filter(function(t){ return t.id !== id; });
+    addHistory('delete', '删除任务「' + task.name + '」', 0);
+    saveState();
+    renderAll();
+    showToast('已删除');
+  }
+
+  function tryRedeem(id) {
+    var wish = state.wishes.find(function(w){ return w.id === id; });
+    if (!wish || wish.redeemed) return;
+    if (getAvailablePoints() < wish.cost) {
+      showToast('积分不足，继续完成任务吧');
+      return;
+    }
+    // 确认弹窗
+    document.getElementById('confirmTitle').textContent = '确认兑换';
+    document.getElementById('confirmMsg').innerHTML =
+      '兑换「' + esc(wish.name) + '」将消耗 <b style="color:#F06292">' + wish.cost + '</b> 积分。<br>' +
+      '小树苗成长值将减少，请确认。';
+    showConfirm(function() {
+      wish.redeemed = true;
+      wish.redeemedAt = Date.now();
+      state.totalRedeemed += wish.cost;
+      addHistory('wish', '兑换愿望「' + wish.name + '」', -wish.cost);
+      var prevStage = getStageIndex();
+      saveState();
+      renderAll();
+      var newStage = getStageIndex();
+      showToast('🎉 兑换成功！');
+      if (newStage < prevStage) {
+        showToast('小树成长值减少，降至「' + STAGES[newStage].name + '」阶段');
+      }
+    });
+  }
+
+  function deleteWish(id) {
+    var wish = state.wishes.find(function(w){ return w.id === id; });
+    if (!wish) return;
+    state.wishes = state.wishes.filter(function(w){ return w.id !== id; });
+    addHistory('delete', '删除愿望「' + wish.name + '」', 0);
+    saveState();
+    renderAll();
+    showToast('已删除');
+  }
+
+  // ========== 模态框 ==========
+  function openModal(id) { document.getElementById(id).classList.add('show'); }
+  function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+
+  function buildCategoryPicker() {
+    var picker = document.getElementById('catPicker');
+    var html = '';
+    for (var i = 0; i < CATEGORIES.length; i++) {
+      var c = CATEGORIES[i];
+      html += '<button class="cat-btn' + (c.id === selectedCategory ? ' active' : '') + '" data-cat="' + c.id + '">' + c.emoji + ' ' + c.name + '</button>';
+    }
+    picker.innerHTML = html;
+    var btns = picker.querySelectorAll('.cat-btn');
+    for (var i = 0; i < btns.length; i++) {
+      btns[i].addEventListener('click', function() {
+        var btns2 = picker.querySelectorAll('.cat-btn');
+        for (var j = 0; j < btns2.length; j++) btns2[j].classList.remove('active');
+        this.classList.add('active');
+        selectedCategory = this.dataset.cat;
+      });
+    }
+  }
+
+  function setupTaskModal() {
+    document.getElementById('openAddTask').addEventListener('click', function() {
+      document.getElementById('taskNameInput').value = '';
+      document.getElementById('taskPtInput').value = '10';
+      selectedCategory = 'study';
+      buildCategoryPicker();
+      // reset quick points
+      var qps = document.querySelectorAll('#addTaskModal .quick-pt');
+      for (var i = 0; i < qps.length; i++) qps[i].classList.remove('active');
+      var tenBtn = document.querySelector('#addTaskModal .quick-pt[data-pt="10"]');
+      if (tenBtn) tenBtn.classList.add('active');
+      openModal('addTaskModal');
+      setTimeout(function() { document.getElementById('taskNameInput').focus(); }, 300);
+    });
+
+    document.getElementById('cancelTask').addEventListener('click', function() { closeModal('addTaskModal'); });
+    document.getElementById('confirmTask').addEventListener('click', function() {
+      var name = document.getElementById('taskNameInput').value.trim();
+      var pts = parseInt(document.getElementById('taskPtInput').value) || 10;
+      if (!name) { showToast('请输入任务名称'); return; }
+      if (pts < 1) pts = 1; if (pts > 100) pts = 100;
+      var task = { id: gid(), name: name, points: pts, category: selectedCategory, completed: false };
+      state.tasks.push(task);
+      addHistory('add_task', '添加任务「' + name + '」', 0);
+      saveState();
+      renderAll();
+      closeModal('addTaskModal');
+      showToast('任务已添加');
+    });
+
+    // 数量增减
+    document.getElementById('taskPtDec').addEventListener('click', function() {
+      var v = parseInt(document.getElementById('taskPtInput').value) || 10;
+      if (v > 1) document.getElementById('taskPtInput').value = v - 1;
+    });
+    document.getElementById('taskPtInc').addEventListener('click', function() {
+      var v = parseInt(document.getElementById('taskPtInput').value) || 10;
+      if (v < 100) document.getElementById('taskPtInput').value = v + 1;
+    });
+
+    // 快捷积分
+    var qps = document.querySelectorAll('#addTaskModal .quick-pt');
+    for (var i = 0; i < qps.length; i++) {
+      qps[i].addEventListener('click', function() {
+        for (var j = 0; j < qps.length; j++) qps[j].classList.remove('active');
+        this.classList.add('active');
+        document.getElementById('taskPtInput').value = this.dataset.pt;
+      });
+    }
+  }
+
+  function setupWishModal() {
+    document.getElementById('openAddWish').addEventListener('click', function() {
+      document.getElementById('wishNameInput').value = '';
+      document.getElementById('wishCostInput').value = '30';
+      var qps = document.querySelectorAll('#addWishModal .quick-pt');
+      for (var i = 0; i < qps.length; i++) qps[i].classList.remove('active');
+      var thirty = document.querySelector('#addWishModal .quick-pt[data-cost="30"]');
+      if (thirty) thirty.classList.add('active');
+      openModal('addWishModal');
+      setTimeout(function() { document.getElementById('wishNameInput').focus(); }, 300);
+    });
+
+    document.getElementById('cancelWish').addEventListener('click', function() { closeModal('addWishModal'); });
+    document.getElementById('confirmWish').addEventListener('click', function() {
+      var name = document.getElementById('wishNameInput').value.trim();
+      var cost = parseInt(document.getElementById('wishCostInput').value) || 30;
+      if (!name) { showToast('请输入愿望名称'); return; }
+      if (cost < 1) cost = 1;
+      var wish = { id: gid(), name: name, cost: cost, redeemed: false, redeemedAt: null };
+      state.wishes.push(wish);
+      addHistory('add_wish', '添加愿望「' + name + '」', 0);
+      saveState();
+      renderAll();
+      closeModal('addWishModal');
+      showToast('愿望已添加');
+    });
+
+    document.getElementById('wishCostDec').addEventListener('click', function() {
+      var v = parseInt(document.getElementById('wishCostInput').value) || 30;
+      if (v > 1) document.getElementById('wishCostInput').value = v - 1;
+    });
+    document.getElementById('wishCostInc').addEventListener('click', function() {
+      var v = parseInt(document.getElementById('wishCostInput').value) || 30;
+      if (v < 9999) document.getElementById('wishCostInput').value = v + 1;
+    });
+
+    var qps = document.querySelectorAll('#addWishModal .quick-pt');
+    for (var i = 0; i < qps.length; i++) {
+      qps[i].addEventListener('click', function() {
+        for (var j = 0; j < qps.length; j++) qps[j].classList.remove('active');
+        this.classList.add('active');
+        document.getElementById('wishCostInput').value = this.dataset.cost;
+      });
+    }
+  }
+
+  // ========== Tab ==========
+  function setupTabs() {
+    var btns = document.querySelectorAll('.tab-btn');
+    var panels = document.querySelectorAll('.tab-panel');
+    for (var i = 0; i < btns.length; i++) {
+      btns[i].addEventListener('click', function() {
+        for (var j = 0; j < btns.length; j++) {
+          btns[j].classList.remove('active');
+          panels[j].classList.remove('active');
+        }
+        this.classList.add('active');
+        var panel = document.getElementById(this.dataset.tab + 'Panel');
+        if (panel) panel.classList.add('active');
+      });
+    }
+  }
+
+  // ========== 确认弹窗 ==========
+  function showConfirm(callback) {
+    confirmCallback = callback;
+    document.getElementById('confirmDialog').classList.add('show');
+  }
+  function setupConfirm() {
+    document.getElementById('confirmNo').addEventListener('click', function() {
+      document.getElementById('confirmDialog').classList.remove('show');
+      confirmCallback = null;
+    });
+    document.getElementById('confirmYes').addEventListener('click', function() {
+      document.getElementById('confirmDialog').classList.remove('show');
+      if (confirmCallback) confirmCallback();
+      confirmCallback = null;
+    });
+  }
+
+  // ========== 庆祝 ==========
+  function celebrate(newStage) {
+    var stage = STAGES[newStage];
+    document.getElementById('celeEmoji').textContent = stage.emoji;
+    document.getElementById('celeTitle').textContent = '小树成长了！';
+    var msgs = [
+      '恭喜！你的小树成长为「' + stage.name + '」！',
+      '阶段 ' + (newStage+1) + '/10 — 继续加油，向着参天大树前进！'
+    ];
+    document.getElementById('celeMsg').innerHTML = msgs.join('<br>');
+    document.getElementById('celebration').classList.add('show');
+    spawnConfetti();
+  }
+
+  function spawnConfetti() {
+    var colors = ['#F48FB1','#EC6EA0','#CE93D8','#F8BBD0','#FF8A80','#F06292'];
+    for (var i = 0; i < 30; i++) {
+      var piece = document.createElement('div');
+      piece.className = 'confetti-piece';
+      piece.style.left = Math.random() * 100 + '%';
+      piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+      piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+      piece.style.animationDuration = (1.5 + Math.random() * 1.5) + 's';
+      piece.style.animationDelay = (Math.random() * 0.3) + 's';
+      piece.style.width = (6 + Math.random() * 6) + 'px';
+      piece.style.height = (6 + Math.random() * 6) + 'px';
+      document.body.appendChild(piece);
+      (function(p) {
+        setTimeout(function() { p.remove(); }, 3500);
+      })(piece);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('celeBtn').addEventListener('click', function() {
+      document.getElementById('celebration').classList.remove('show');
+    });
+  });
+
+  // ========== 浮动积分 ==========
+  function showFloatPoints(itemEl, text) {
+    var rect = itemEl.getBoundingClientRect();
+    var appRect = document.getElementById('app').getBoundingClientRect();
+    var el = document.createElement('div');
+    el.className = 'float-points';
+    el.textContent = text;
+    el.style.left = (rect.left - appRect.left + rect.width/2 - 15) + 'px';
+    el.style.top = (rect.top - appRect.top) + 'px';
+    document.getElementById('app').appendChild(el);
+    setTimeout(function() { el.remove(); }, 1200);
+  }
+
+  // ========== Toast ==========
+  var toastTimer = null;
+  function showToast(msg) {
+    var t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(function() { t.classList.remove('show'); }, 2200);
+  }
+
+  // ========== 清空历史 / 重置所有数据 ==========
+  document.addEventListener('DOMContentLoaded', function() {
+    var clearBtn = document.getElementById('clearHistory');
+    if (clearBtn) {
+      clearBtn.addEventListener('click', function() {
+        document.getElementById('confirmTitle').textContent = '清空记录';
+        document.getElementById('confirmMsg').textContent = '确定清空所有成长历程记录吗？';
+        showConfirm(function() {
+          state.history = [];
+          saveState();
+          renderAll();
+          showToast('已清空记录');
+        });
+      });
+    }
+    var resetBtn = document.getElementById('resetAll');
+    if (resetBtn) {
+      resetBtn.addEventListener('click', function() {
+        document.getElementById('confirmTitle').textContent = '重置所有数据';
+        document.getElementById('confirmMsg').innerHTML = '将清空任务、愿望、积分和成长记录等全部数据，小树将从种子重新开始。<br><b>此操作不可恢复</b>，确定重置吗？';
+        showConfirm(function() {
+          state = defaultState();
+          saveState();
+          renderAll();
+          showToast('已重置所有数据');
+        });
+      });
+    }
+  });
+
+  // ========== HTML 转义 ==========
+  function esc(s) {
+    if (!s) return '';
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // ========== 模态框点击外部关闭 ==========
+  document.addEventListener('DOMContentLoaded', function() {
+    var modals = document.querySelectorAll('.modal-overlay');
+    for (var i = 0; i < modals.length; i++) {
+      modals[i].addEventListener('click', function(e) {
+        if (e.target === this) this.classList.remove('show');
+      });
+    }
+  });
+
+  // ========== 初始化 ==========
+  function init() {
+    loadState();
+    setupTabs();
+    setupTaskModal();
+    setupWishModal();
+    setupConfirm();
+    setupCalendar();
+    renderAll();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>
+</body>
+</html>
